@@ -69,7 +69,7 @@ def chat_eli(query):
     ]
 
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4-1106-preview",
         messages=messages,
         max_tokens = 1500
     )
