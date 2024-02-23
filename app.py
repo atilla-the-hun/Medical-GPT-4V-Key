@@ -1,15 +1,18 @@
 import streamlit as st
 import base64
 import os
-from dotenv import load_dotenv
 from openai import OpenAI
 import tempfile
 
-load_dotenv()
+# Ask the user for their OpenAI API key
+api_key = st.text_input("Enter your OpenAI API Key", type="password")
 
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-
-client = OpenAI()
+if api_key:
+    os.environ["OPENAI_API_KEY"] = api_key
+    client = OpenAI()
+else:
+    st.warning("Medi-Help AI - Visual analysis of medical problems. Please enter your OpenAI API key above.")
+    st.stop()
 
 sample_prompt = """You are a medical practictioner and an expert in analzying medical related images working for a very reputed hospital. You will be provided with images and you need to identify the anomalies, any disease or health issues. You need to generate the result in detailed manner. Write all the findings, next steps, recommendation, etc. You only need to respond if the image is related to a human body and health issues. You must have to answer but also write a disclaimer saying that "Consult with a Doctor before making any decisions".
 
@@ -54,7 +57,6 @@ def call_gpt4_model_for_analysis(filename: str, sample_prompt=sample_prompt):
         max_tokens = 1500
         )
 
-    print(response.choices[0].message.content)
     return response.choices[0].message.content
 
 def chat_eli(query):
@@ -69,15 +71,15 @@ def chat_eli(query):
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=messages,
-        max_tokens=1500
+        max_tokens = 1500
     )
 
     return response.choices[0].message.content
 
-st.title("Medical Help using Multimodal LLM")
+st.title("Medi-Help AI")
 
 with st.expander("About this App"):
-    st.write("Upload an image to get an analysis from GPT-4.")
+    st.write("Upload an image of a medical problem to get analysis from an advanced artificial intelligence model.")
 
 uploaded_file = st.file_uploader("Upload an Image", type=["jpg", "jpeg", "png"])
 
@@ -101,4 +103,6 @@ if 'result' in st.session_state and st.session_state['result']:
     st.info("Below you have an option for ELI5 to understand in simpler terms.")
     if st.radio("ELI5 - Explain Like I'm 5", ('No', 'Yes')) == 'Yes':
         simplified_explanation = chat_eli(st.session_state['result'])
-        st.markdown(simplified_explanation, unsafe_allow_html=True)       
+        st.markdown(simplified_explanation, unsafe_allow_html=True)
+
+      
