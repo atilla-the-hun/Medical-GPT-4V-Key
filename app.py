@@ -75,6 +75,24 @@ def chat_eli(query):
     )
 
     return response.choices[0].message.content
+# Streamlit app
+col1, col2 = st.columns([1, 6])
+with col1:
+    st.image("brain_boost_2.png", width=100)
+with col2:
+    st.markdown(
+        """
+        <a href="https://brain-boost-ai-experts.vercel.app" style="text-decoration: none; color: inherit;">
+            <h1 style="margin: 0;">Brain Boost</h1>
+        </a>
+        <a href="https://brain-boost-ai-experts.vercel.app" style="text-decoration: none; color: inherit;">
+            <p style="font-size: 14px; margin: 5px 0;">Click here to visit Brain Boost for AI solutions</p>
+        </a>
+        """,
+        unsafe_allow_html=True
+    )
+
+st.subheader("Chat with AI (and optionally your document)")
 
 st.title("Medi-Help AI")
 
