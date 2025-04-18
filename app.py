@@ -4,14 +4,17 @@ import os
 from openai import OpenAI
 import tempfile
 
-# Ask the user for their OpenAI API key
-api_key = st.text_input("Enter your OpenAI API Key", type="password")
+# Ask the user for their OpenRouter API key
+api_key = st.text_input("Enter your OpenRouter API Key", type="password")
 
 if api_key:
-    os.environ["OPENAI_API_KEY"] = api_key
-    client = OpenAI()
+    os.environ["OPENROUTER_API_KEY"] = api_key
+    client = OpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=api_key,
+    )
 else:
-    st.warning("Medi-Help AI - Visual analysis of medical problems. Please enter your OpenAI API key above.")
+    st.warning("Medi-Help AI - Visual analysis of medical problems. Please enter your OpenRouter API key above.")
     st.stop()
 
 sample_prompt = """You are a medical practictioner and an expert in analzying medical related images working for a very reputed hospital. You will be provided with images and you need to identify the anomalies, any disease or health issues. You need to generate the result in detailed manner. Write all the findings, next steps, recommendation, etc. You only need to respond if the image is related to a human body and health issues. You must have to answer but also write a disclaimer saying that "Consult with a Doctor before making any decisions".
@@ -30,7 +33,7 @@ def encode_image(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
 
-def call_gpt4_model_for_analysis(filename: str, sample_prompt=sample_prompt):
+def call_openrouter_model_for_analysis(filename: str, sample_prompt=sample_prompt):
     base64_image = encode_image(filename)
     
     messages = [
@@ -39,23 +42,27 @@ def call_gpt4_model_for_analysis(filename: str, sample_prompt=sample_prompt):
             "content":[
                 {
                     "type": "text", "text": sample_prompt
-                    },
+                },
                 {
                     "type": "image_url",
                     "image_url": {
                         "url": f"data:image/jpeg;base64,{base64_image}",
                         "detail": "high"
-                        }
                     }
-                ]
-            }
-        ]
+                }
+            ]
+        }
+    ]
 
     response = client.chat.completions.create(
-        model = "gpt-4-vision-preview",
-        messages = messages,
-        max_tokens = 1500
-        )
+        extra_headers={
+            "HTTP-Referer": "https://your-medical-app.com",  # Update with your site URL
+            "X-Title": "Medi-Help AI",  # Update with your site name
+        },
+        model="meta-llama/llama-4-maverick:free",  # Using OpenRouter's GPT-4 Vision model
+        messages=messages,
+        max_tokens=1500
+    )
 
     return response.choices[0].message.content
 
@@ -69,13 +76,16 @@ def chat_eli(query):
     ]
 
     response = client.chat.completions.create(
-        model="gpt-4-1106-preview",
+        extra_headers={
+            "HTTP-Referer": "https://your-medical-app.com",  # Update with your site URL
+            "X-Title": "Medi-Help AI",  # Update with your site name
+        },
+        model="meta-llama/llama-4-maverick:free",  # Using OpenRouter's GPT-4 model
         messages=messages,
-        max_tokens = 1500
+        max_tokens=1500
     )
 
     return response.choices[0].message.content
-    
 
 st.title("Medi-Help AI")
 
@@ -95,7 +105,7 @@ if uploaded_file is not None:
 # Process button
 if st.button('Analyze Image'):
     if 'filename' in st.session_state and os.path.exists(st.session_state['filename']):
-        st.session_state['result'] = call_gpt4_model_for_analysis(st.session_state['filename'])
+        st.session_state['result'] = call_openrouter_model_for_analysis(st.session_state['filename'])
         st.markdown(st.session_state['result'], unsafe_allow_html=True)
         os.unlink(st.session_state['filename'])  # Delete the temp file after processing
 
