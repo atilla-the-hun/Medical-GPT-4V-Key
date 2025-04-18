@@ -5,7 +5,7 @@ from openai import OpenAI
 import tempfile
 
 # Ask the user for their OpenRouter API key
-api_key = st.text_input("Enter your OpenRouter API Key", type="password")
+api_key = st.text_input("Enter your OpenRouter API Key - Free for the AI model used", type="password")
 
 if api_key:
     os.environ["OPENROUTER_API_KEY"] = api_key
